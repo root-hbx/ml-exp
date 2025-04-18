@@ -69,7 +69,8 @@ def mutation(p, r_mut):
 def ga(n, adj_mat, n_pop, r_cross, r_mut, selection_md, max_tnm, term_count):
     pop = [random.sample(range(n), n) for _ in range(n_pop)]
     best_sol, best_cost = pop[0], get_cost(n, adj_mat, pop[0])  # randomly initialize best!
-    data = {'cost': deque([]), 'best_cost': deque([])}  # cost means avg_cost
+    data = {'cost': deque([]), 'best_cost': deque([]), 
+            'sol': deque([]), 'best_sol': deque([])}  # 添加sol和best_sol的记录
     count = 0
     # select parents
     if selection_md == 'tnm':
@@ -90,8 +91,13 @@ def ga(n, adj_mat, n_pop, r_cross, r_mut, selection_md, max_tnm, term_count):
             count += 1
         else:  # best_cost change
             count = 0
+
+        # 记录当前最好的个体和平均成本
         data['cost'].append(np.mean(costs))
         data['best_cost'].append(best_cost)
+        data['sol'].append(pop[np.argmin(costs)])  # 记录当前种群中最好的解
+        data['best_sol'].append(best_sol.copy())  # 记录全局最优解
+
         if count > term_count:
             return best_sol, best_cost, data
         selected = [selection_fnc(pop, costs, max_tnm=max_tnm) for _ in range(n_pop)]

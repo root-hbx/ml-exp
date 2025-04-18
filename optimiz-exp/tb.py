@@ -82,7 +82,8 @@ def tb(n, adj_mat, tb_size, max_tnm, mut_md, term_count):
     fq_dict = {}
     best_sol = sol.copy()
     best_cost = get_cost(n, adj_mat, sol)
-    data = {'cost': deque([]), 'best_cost': deque([])}
+    data = {'cost': deque([]), 'best_cost': deque([]), 
+            'sol': deque([]), 'best_sol': deque([])}  # 添加sol和best_sol的记录
     count = 0
     while True:
         sol, cost, tb_list, fq_dict = tnm_selection(n, adj_mat, sol,
@@ -90,13 +91,18 @@ def tb(n, adj_mat, tb_size, max_tnm, mut_md, term_count):
                                                     tb_list, fq_dict, best_cost)
         # mention the iteratively variable 'sol'!
         if cost < best_cost:
-            best_sol = sol
+            best_sol = sol.copy()  # 使用copy()确保保存的是解的副本
             best_cost = cost
             count = 0
         else:
             count += 1
+        
+        # 记录当前解和全局最优解
         data['cost'].append(cost)
         data['best_cost'].append(best_cost)
+        data['sol'].append(sol.copy())  # 记录当前解
+        data['best_sol'].append(best_sol.copy())  # 记录全局最优解
+        
         if count > term_count:
             break
     data['fq_dict'] = fq_dict

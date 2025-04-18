@@ -35,7 +35,7 @@ for i in range(n):
 # initialization
 
 opt_cost = 6659.439330623091  # get result from tsp_gurobi.py
-num_tests = 100  # number of iid tests
+num_tests = 1  # number of iid tests
 result = {'best_sol': [], 'best_cost': math.inf, 'best_gap': math.inf,
           'cost': [0] * num_tests, 'time': [0] * num_tests,
           'avg_cost': math.inf, 'avg_gap': math.inf, 'cost_std': math.inf,
@@ -47,9 +47,9 @@ data = {}
 
 # set method
 
-# method = 'ts'  # tabu search
+method = 'ts'  # tabu search
 # method = 'ga'  # genetic algorithm
-method = 'sa'  # simulated annealing
+# method = 'sa'  # simulated annealing
 
 
 # set mutation method
@@ -106,69 +106,61 @@ pprint(result)
 
 
 # SA visualization
-# https://matplotlib.org/stable/gallery/animation/dynamic_image.html
-# https://stackoverflow.com/questions/49158604/matplotlib-animation-update-title-using-artistanimation
-# https://stackoverflow.com/questions/17895698/updating-the-x-axis-values-using-matplotlib-animation
-if num_tests == 1 and method == 'simulated annealing':
-    fig, ax = plt.subplots(1, 2, figsize=(8, 4))
-    plt.subplots_adjust(wspace=0.3)  # more interval between two axes
+if num_tests == 1:
+    if method_name == 'Simulated Annealing':
+        fig, ax = plt.subplots(figsize=(8, 6))
 
-    xlim = [np.min(pos, 0)[0], np.max(pos, 0)[0]]
-    ylim = [np.min(pos, 0)[1], np.max(pos, 0)[1]]
-    ax[0].set(xlabel='X Axis', ylabel='Y Axis',
-              xlim=xlim, ylim=ylim,
-              title='Current and Optimal Tours')
-    ax[1].set(xlabel='Number of Iteration', ylabel='Tour Length',
-              title='Convergence Curve')
-    ims = []
-    for i in range(len(data['sol'])):
-        im = []
-        sol = data['sol'][i]
-        best_sol = data['best_sol'][i]
-        cost = list(data['cost'])[:i]
-        best_cost = list(data['best_cost'])[:i]
+        final_sol = data['best_sol'][-1]
 
-        if i > 2 and cost[-1] == cost[-2]:
-            continue
+        xlim = [np.min(pos, 0)[0], np.max(pos, 0)[0]]
+        ylim = [np.min(pos, 0)[1], np.max(pos, 0)[1]]
+        ax.set(xlabel='X Axis', ylabel='Y Axis',
+            xlim=xlim, ylim=ylim,
+            title='Optimal Tour with Simulated Annealing')
 
-        # https://matplotlib.org/stable/gallery/shapes_and_collections/line_collection.html
-        lines = [[pos[sol[_]], pos[sol[(_ + 1) % n]]] for _ in range(n)]
-        line_segments = LineCollection(lines, color='b')
-        im.append(ax[0].add_collection(line_segments))
-        lines = [[pos[best_sol[_]], pos[best_sol[(_ + 1) % n]]] for _ in range(n)]
-        line_segments = LineCollection(lines, color='r', alpha=0.5, linewidth=2)
-        im.append(ax[0].add_collection(line_segments))
+        ax.scatter([p[0] for p in pos], [p[1] for p in pos], c='black', s=30)
 
-        # # plot directed tour, too slow
-        # # https://stackoverflow.com/questions/46506375/creating-graphics-for-euclidean-instances-of-tsp
-        # for j in range(n):
-        #     start_pos = pos[sol[j]]
-        #     end_pos = pos[sol[(j + 1) % n]]
-        #     im.append(ax[0].annotate("",
-        #                  xy=start_pos, xycoords='data',
-        #                  xytext=end_pos, textcoords='data',
-        #                  arrowprops=dict(arrowstyle='->',
-        #                                  connectionstyle='arc3',
-        #                                  alpha=1,
-        #                                  color='b')))
-        # for j in range(n):
-        #     start_pos = pos[best_sol[j]]
-        #     end_pos = pos[best_sol[(j + 1) % n]]
-        #     im.append(ax[0].annotate("",
-        #                  xy=start_pos, xycoords='data',
-        #                  xytext=end_pos, textcoords='data',
-        #                  arrowprops=dict(arrowstyle='->',
-        #                                  connectionstyle='arc3',
-        #                                  lw=2,
-        #                                  alpha=0.5,
-        #                                  color='r')))
+        lines = [[pos[final_sol[i]], pos[final_sol[(i + 1) % n]]] for i in range(n)]
+        line_segments = LineCollection(lines, color='r', linewidth=1.5)
+        ax.add_collection(line_segments)
 
-        line1, = ax[1].plot(range(len(cost)), cost, color='b')
-        line2, = ax[1].plot(range(len(best_cost)), best_cost, color='r')
-        im.append(line1)
-        im.append(line2)
-        ims.append(im)
+        plt.savefig('results/sa_path.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    elif method_name == 'Tabu Search':
+        fig, ax = plt.subplots(figsize=(8, 6))
 
-    ani = animation.ArtistAnimation(fig, ims, interval=10, blit=True,
-                                    repeat_delay=1000)
-    ani.save('results/sa.mp4')
+        final_sol = data['best_sol'][-1]
+
+        xlim = [np.min(pos, 0)[0], np.max(pos, 0)[0]]
+        ylim = [np.min(pos, 0)[1], np.max(pos, 0)[1]]
+        ax.set(xlabel='X Axis', ylabel='Y Axis',
+            xlim=xlim, ylim=ylim,
+            title='Optimal Tour with Simulated Annealing')
+
+        ax.scatter([p[0] for p in pos], [p[1] for p in pos], c='black', s=30)
+
+        lines = [[pos[final_sol[i]], pos[final_sol[(i + 1) % n]]] for i in range(n)]
+        line_segments = LineCollection(lines, color='r', linewidth=1.5)
+        ax.add_collection(line_segments)
+
+        plt.savefig('results/ts_path.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    elif method_name == 'Genetic Algorithm':
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        final_sol = data['best_sol'][-1]
+
+        xlim = [np.min(pos, 0)[0], np.max(pos, 0)[0]]
+        ylim = [np.min(pos, 0)[1], np.max(pos, 0)[1]]
+        ax.set(xlabel='X Axis', ylabel='Y Axis',
+            xlim=xlim, ylim=ylim,
+            title='Optimal Tour with Simulated Annealing')
+
+        ax.scatter([p[0] for p in pos], [p[1] for p in pos], c='black', s=30)
+
+        lines = [[pos[final_sol[i]], pos[final_sol[(i + 1) % n]]] for i in range(n)]
+        line_segments = LineCollection(lines, color='r', linewidth=1.5)
+        ax.add_collection(line_segments)
+
+        plt.savefig('results/ga_path.png', dpi=300, bbox_inches='tight')
+        plt.close()

@@ -1,23 +1,25 @@
-import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
-import matplotlib.animation as animation
-import numpy as np
-from pprint import pprint
+import os
 import time
 import math
 from tqdm import tqdm
+
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+import matplotlib.animation as animation
+
+import numpy as np
+from pprint import pprint
 
 from tsp import *
 import tb
 import ga
 import sa
 
-import os
+
 if not os.path.exists('results'):
     os.makedirs('results')
 
 # load data
-
 pos = [[float(x) for x in s.split()[1:]] for s in open('data/dj38.txt').readlines()]
 n = len(pos)
 
@@ -63,42 +65,28 @@ for _ in tqdm(range(num_tests)):
     start = time.time()
     if method == 'ts':
         method_name = 'Tabu Search'
-        best_sol, best_cost, data = tb.tb(n, adj_mat,
-                                          tb_size=20,  # tabu solutions in tb_list
-                                          max_tnm=100,  # how many candidates picked in tournament selection
-                                          mut_md=mut_md,  # [get_sol, get delta], method of mutation, e.g. swap, 2-opt
-                                          term_count=200  # terminate threshold if best_cost nor change
-                                          )
+        best_sol, best_cost, data = tb.tb(n, adj_mat,tb_size=20, max_tnm=100, 
+                                    mut_md=mut_md, term_count=200)
     elif method == 'ga':
         method_name = 'Genetic Algorithm'
-        best_sol, best_cost, data = ga.ga(n, adj_mat,
-                                          n_pop=200,
-                                          r_cross=0.5,
-                                          r_mut=0.8,
-                                          selection_md='tnm',  # 'rw' / 'tnm' / 'elt'
-                                          max_tnm=3,
-                                          term_count=200
-                                          )
+        best_sol, best_cost, data = ga.ga(n, adj_mat, n_pop=200, r_cross=0.5, 
+                                    r_mut=0.8, selection_md='tnm', max_tnm=3, term_count=200)
     elif method == 'sa':
         method_name = 'Simulated Annealing'
-        best_sol, best_cost, data = sa.sa(n, adj_mat,
-                                          tb_size=0,  # tabu solutions in tb_list
-                                          max_tnm=20,  # how many candidates picked in tournament selection
-                                          mut_md=mut_md,  # [get_sol, get delta], method of mutation, e.g. swap, 2-opt
-                                          term_count_1=25,  # inner loop termination flag
-                                          term_count_2=25,  # outer loop termination flag
-                                          t_0=1200,  # starting temperature, calculated by init_temp.py
-                                          alpha=0.9  # cooling parameter
-                                          )
+        best_sol, best_cost, data = sa.sa(n, adj_mat, tb_size=0, max_tnm=20, mut_md=mut_md,
+                                    term_count_1=25, term_count_2=25, t_0=1200, alpha=0.9)
     else:
         assert 0, 'unknown method'
+
     end = time.time()
     result['time'][_] = end - start
     result['cost'][_] = best_cost
+
     if best_cost < result['best_cost']:
         result['best_sol'] = best_sol
         result['best_cost'] = best_cost
         result['best_gap'] = best_cost / opt_cost - 1
+
     plt.plot(range(len(data['cost'])), data['cost'], color='b', alpha=math.pow(num_tests, -0.75))
     plt.plot(range(len(data['cost'])), data['best_cost'], color='r', alpha=math.pow(num_tests, -0.75))
 
